@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <title>DKWIN AI Signal System</title>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.4/dist/tesseract.min.js"></script>
+  <style>
+    body {
+      background-color: #000;
+      color: #00ff00;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      margin: 0;
+    }
+    .container {
+      padding: 20px;
+    }
+    .ai-box {
+      border: 2px solid #00ff00;
+      padding: 10px;
+      margin: 10px auto;
+      width: 250px;
+      border-radius: 10px;
+    }
+    .ai-title {
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .signal {
+      font-size: 24px;
+      color: #fff;
+      margin-top: 10px;
+    }
+    iframe {
+      width: 100%;
+      height: 80vh;
+      border: none;
+      margin-top: 10px;
+    }
+    input[type="file"] {
+      margin-top: 10px;
+    }
+    .loader {
+      font-size: 16px;
+      color: yellow;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>📤 গেম স্ক্রিনশট আপলোড করুন</h2>
+    <input type="file" accept="image/*" onchange="analyzeImage(event)">
+    <p class="loader" id="loader">অপেক্ষা করুন...</p>
+
+    <div class="ai-box">
+      <div class="ai-title">🤖 Humai (AI01)</div>
+      <div class="signal" id="ai1-signal">সিগন্যাল নেই</div>
+    </div>
+
+    <div class="ai-box">
+      <div class="ai-title">🤖 Share (AI02)</div>
+      <div class="signal" id="ai2-signal">সিগন্যাল নেই</div>
+    </div>
+  </div>
+
+  <!-- নিচে গেম iframe -->
+  <iframe src="https://dkwin9.com/#/register?invitationCode=27364142400"></iframe>
+
+  <script>
+    function analyzeImage(event) {
+      document.getElementById("loader").innerText = "🔄 বিশ্লেষণ চলছে...";
+      const file = event.target.files[0];
+      if (!file) return;
+
+      Tesseract.recognize(file, 'eng')
+        .then(({ data: { text } }) => {
+          const numbers = text.match(/\d+/g)?.map(Number).filter(n => n >= 1 && n <= 99) || [];
+
+          if (numbers.length < 5) {
+            document.getElementById("ai1-signal").innerText = "অপর্যাপ্ত ডেটা";
+            document.getElementById("ai2-signal").innerText = "অপর্যাপ্ত ডেটা";
+          } else {
+            const signalText = getSignal(numbers.slice(0, 5));
+            document.getElementById("ai1-signal").innerText = signalText;
+            document.getElementById("ai2-signal").innerText = signalText;
+          }
+
+          document.getElementById("loader").innerText = "✔️ বিশ্লেষণ সম্পন্ন";
+        })
+        .catch(err => {
+          document.getElementById("ai1-signal").innerText = "ত্রুটি!";
+          document.getElementById("ai2-signal").innerText = "ত্রুটি!";
+          document.getElementById("loader").innerText = "❌ বিশ্লেষণ ব্যর্থ";
+        });
+    }
+
+    function getSignal(numbers) {
+      let big = 0, small = 0;
+      numbers.forEach(n => {
+        if (n >= 50) big++;
+        else small++;
+      });
+
+      const signal = big > small ? 'SMALL' : 'BIG';
+      return `[${numbers.join(', ')}] → সিগন্যাল: ${signal}`;
+    }
+  </script>
+
+</body>
+</html>
